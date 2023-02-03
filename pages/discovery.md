@@ -1,0 +1,18 @@
+All the supported causal discovery algorithm classes take a data object (TimeSeriesData or TabularData) and optionally PriorKnowledge as input during instantiation. In order to make a decision on whether a causal edge exists between two variables or not, all implemented algorithms internally make use of statistical hypothesis testing, specifically by computing p-values. Further, all these classes have a run method that takes pvalue_thres as input argument (among other case specific inputs), and returns a causal graph (potentially with some undirected edges) along with the strength of the discovered causal edges and their p-values.
+
+**Time Series Data**
+
+For time series data, the run method takes max_lag argument, a non-negative integer, which specifies the maximum possible time lag allowed for causal parents.
+
+**Continuous data**: For time series continuous data, we currently support PC algorithm (Spirtes et al., 2000), Granger causality (Granger, 1969), and VARLINGAM (Hyvärinen et al., 2010). Granger causality, and VARLINGAM only support linear causal relationship
+between variables, while PC in general supports non-linear relationships. For targeted causal discovery (see section 1), PCSingle and GrangerSingle retrieve the causal parents of a given target variable. Their run method takes as additional argument target_var, which specifies the target variable name. For full causal discovery, PC, Granger and VARLINGAM classes should be used. Note that of the three algorithms, only VARLINGAM supports instantaneous causal edge discovery in our library.Finally, PCSingle and PC API take two additional arguments– max_condition_set_size and CI_test. Since the PC algorithm performs conditional independence (CI) tests to find causal dependence between two variables, we need to specify which test to use. This is done through the CI_test argument. Currently we support two choices– PartialCorrelation and KCI, but users may also specify their own CI test class. PartialCorrelation assumes linear causal relationship between variables while KCI allows non-linear relationships, depending on the kernel used (see tutorials in our repository for examples). The argument max_condition_set_size on the other hand specifies the maximum size of condition set to
+be used during CI tests (the upper limit of max_condition_set_size is N − 2, where N is the total number of variables). Larger values make the PC algorithm exponentially slower,but typically more accurate. We also support specifying max_condition_set_size as None.
+In this case, CI tests are performed using all N − 2 variables.While this can speed up the PC algorithm in the worst case, the results may be less accurate. Ideally, we recommend using a small integer (default value is 4) as a trade-off between speed and accuracy.
+
+**Discrete data**: For time series discrete data, PCSingle and PC can be used. In this case, we support the DiscreteCI_tests class, in which one of the following CI tests can be specified in the method argument– Chi-squared test (pearson, default), log-likelihood test
+(log-likelihood), Modified Log-likelihood (mod-log-likelihood), Freeman-Tukey Statistic (freeman-tukey), and Neyman’s statistic (neyman). The additional arguments to be specified to the run method for these API’s are similar to the continuous case above.
+
+**Tabular Data**
+
+For both continuous and discrete case, we support the PC algorithm. The details of the PC
+API are identical to the time series case above.
